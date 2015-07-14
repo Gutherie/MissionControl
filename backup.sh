@@ -63,7 +63,7 @@ then
                                 then
                                         process ${TMP_DIR} ${BASE_DIR}${FILE} ${BASE_DIR}${BLOB} ${server} $1
                                 else
-                                        process ${TMP_DIR} ${BASE_DIR}${DATA}/${server}/${FILE} ${BASE_DIR}${DATA}/${server}${BLOB} ${server} $1
+                                        process ${TMP_DIR} ${BASE_DIR}${DATA}/${server}${FILE} ${BASE_DIR}${DATA}/${server}${BLOB} ${server} $1
                                 fi
 			done	
 			
@@ -76,7 +76,7 @@ then
 				then
 					process ${TMP_DIR} ${BASE_DIR}${FILE} ${BASE_DIR}${BLOB} $2 $1
 				else
-					process ${TMP_DIR} ${BASE_DIR}${DATA}/$2/${FILE} ${BASE_DIR}${DATA}/$2${BLOB} $2 $1
+					process ${TMP_DIR} ${BASE_DIR}${DATA}/$2${FILE} ${BASE_DIR}${DATA}/$2${BLOB} $2 $1
 				fi
 			else
 				echo "Error with your selection, only two arguements allowed"
