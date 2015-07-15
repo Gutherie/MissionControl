@@ -16,6 +16,9 @@ SITES=(main bayswatermd hchlink mat_centre oscarResource tapestry chap iampreg m
 DELAY=30
 
 DATE=`date +%Y-%m-%d`
+STATUSFILE="status.tmp"
+
+cat /dev/null > ${STATUSFILE}
 
 # arg1 : tmpdir
 # arg2 : datadir
@@ -25,24 +28,55 @@ DATE=`date +%Y-%m-%d`
 # arg6 : date prefix
  
 function process {
-	echo "Archiving data file for $4"
-        ssh $5 "tar -pcvzf ${1}/${6}_Data.fs-$4.tar.gz $2/Data.fs"
+	DFILE="${6}_Data.fs-$4.tar.gz"
+	DFILEMD5="${6}_Data.fs-$4.md5"
+	BFILE="${6}_blobstorage-$4.tar.gz"
+	BFILEMD5="${6}_blobstorage-$4.md5"
+
+	echo "Archiving data file for $4" | tee -a ${STATUSFILE}
+        ssh $5 "tar -pcvzf ${1}/${DFILE} $2/Data.fs"
 	sleep ${DELAY}
-        echo "Archiving blobstorage for $2"
-        ssh $5 "tar -pcvzf $TMP_DIR/${6}_blobstorage-$4.tar.gz $3"
+	ssh $5 "md5sum ${1}/${DFILE} $2/Data.fs" > ${6}_Data.fs-$4.md5
+	sleep ${DELAY} 
+        echo "Archiving blobstorage for $2" | tee -a ${STATUSFILE}
+        ssh $5 "tar -pcvzf $TMP_DIR/${BFILE} $3"
 	sleep ${DELAY}
-        echo "send data to backup server" 
-        scp $5:$1/${6}_Data.fs-$4.tar.gz ./
+	ssh $5 "md5sum $TMP_DIR/${BFILE}" > ${6}_blobstorage-$4.md5
 	sleep ${DELAY}
-        ssh $5 "rm $TMP_DIR/${6}_Data.fs-$4.tar.gz"
+        echo "send data to backup server"  | tee -a ${STATUSFILE}
+        scp $5:$1/${DFILE} ./
 	sleep ${DELAY}
-        echo "send blobs to backup"
-        scp $5:$1/${6}_blobstorage-$4.tar.gz ./
+	scp $5:$1/${DFILEMD5} ./
 	sleep ${DELAY}
-        ssh $5 "rm $TMP_DIR/${6}_blobstorage-$4.tar.gz"
+	md5sum --quiet ${DFILEMD5}
+	if [ $? -eq 0 ]
+	then
+		echo "Hash match for ${DFILE}" | tee -a ${STATUSFILE}
+	else
+		echo "Hash FAILED for ${DFILE}" | tee -a ${STATUSFILE}
+	fi
 	sleep ${DELAY}
-        STATUS="Backup was completed for "$4
+        ssh $5 "rm $TMP_DIR/${DFILE}"
+	sleep ${DELAY}
+        echo "send blobs to backup" | tee ${STATUSFILE}
+        scp $5:$1/${BFILE} ./
+	sleep ${DELAY}
+	scp $5:$1/${BFILEMD5} ./
+	md5sum --quiet ${BFILEMD5}
+	if [ $? -eq 0 ]
+	then
+               echo "Hash match for ${BFILE}" | tee -a ${STATUSFILE}
+        else
+                echo "Hash FAILED for ${BFILE}" | tee -a ${STATUSFILE}
+        fi
+		
+	sleep ${DELAY}
+        ssh $5 "rm $TMP_DIR/${BFILE}"
+	sleep ${DELAY}
+        STATUS="Backup was completed for "$4 | tee ${STATUSFILE}
 }
+
+# main program will look at arguments and execute accordingly
 
 if [ $# -gt 0 ]
 then
@@ -88,7 +122,7 @@ then
 			fi
 		fi
 	fi
-	# echo ${STATUS} | /usr/bin/mailx -s "zope1 backup" $EMAIL
+	echo ${STATUS} | /usr/bin/mailx -s "zope1 backup" $EMAIL
 else
 	echo "You must enter on argument: ? for help"
 fi
