@@ -10,7 +10,7 @@ BASEREMOTE=/srv/plone-service/plone4-prod/var/log
 BASELOCAL=/srv/MISSIONCONTROL/LOGS
 STATUSFILE=${BASELOCAL}/status.tmp
 DELAY=30
-DATE=$(date +Y-%m-%d)
+DATE=$(date +%Y-%m-%d)
 
 if [ $# -eq 1 ]
 then
