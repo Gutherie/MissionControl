@@ -12,16 +12,21 @@ STATUSFILE=${BASELOCAL}/status.tmp
 DELAY=30
 DATE=$(date +Y-%m-%d)
 
-## create directory
-for file in $(ssh $1 "ls ${BASEREMOTE}")
-do
-	sleep ${DELAY}
-	echo "Backing up $file" | tee -a ${STATUSFILE}
-	ssh $1 "mv ${BASEREMOTE}/$file ${BASEREMOTE}/${DATE}-$file && touch ${BASEREMOTE}/$file"
-	sleep ${DELAY}
-	scp $1:${BASEREMOTE}/${DATE}-$file ${BASELOCAL}
-	sleep ${DELAY}
-	ssh $1 "cat /dev/null > ${BASEREMOTE}/${DATE}-${file}"
-done
-cat ${STATUSFILE} | /usr/bin/mailx -s ${EMAILSUB} $EMAIL
+if [ $# -eq 1 ]
+then
+	## create directory
+	for file in $(ssh $1 "ls ${BASEREMOTE}")
+	do
+		sleep ${DELAY}
+		echo "Backing up $file" | tee -a ${STATUSFILE}
+		ssh $1 "mv ${BASEREMOTE}/$file ${BASEREMOTE}/${DATE}-$file && touch ${BASEREMOTE}/$file"
+		sleep ${DELAY}
+		scp $1:${BASEREMOTE}/${DATE}-$file ${BASELOCAL}
+		sleep ${DELAY}
+		ssh $1 "cat /dev/null > ${BASEREMOTE}/${DATE}-${file}"
+	done
+	cat ${STATUSFILE} | /usr/bin/mailx -s ${EMAILSUB} $EMAIL
+else
+	echo "You must specify a single parameter that is the target host system name (FQDN)"
+fi
 exit 0
