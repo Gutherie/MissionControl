@@ -23,7 +23,7 @@ then
 		sleep ${DELAY}
 		scp $1:${BASEREMOTE}/${DATE}-$file ${BASELOCAL}
 		sleep ${DELAY}
-		ssh $1 "cat /dev/null > ${BASEREMOTE}/${DATE}-${file}"
+		ssh $1 "rm ${BASEREMOTE}/${DATE}-${file}"
 	done
 	cat ${STATUSFILE} | /usr/bin/mailx -s ${EMAILSUB} $EMAIL
 else
