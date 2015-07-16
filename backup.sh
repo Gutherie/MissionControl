@@ -83,7 +83,7 @@ function process {
 	sleep ${DELAY}
         ssh $5 "rm $TMP_DIR/${BFILE}"
 	sleep ${DELAY}
-        STATUS="Backup was completed for "$4 | tee ${STATUSFILE}
+        echo "Backup was completed for "$4 | tee -a ${STATUSFILE}
 }
 
 # main program will look at arguments and execute accordingly
@@ -106,7 +106,7 @@ then
 
 			for server in ${SITES[*]}
 			do
-				echo "Processing a single site (${server}), enter any key to continue (ctrl-c to cancel)"
+				echo "Processing a single site (${server}), enter any key to continue (ctrl-c to cancel)" | tee -a ${STATUSFILE}
                                 if [ ${server} == ${SITES[0]} ]
                                 then
                                         process ${TMP_DIR} ${BASE_DIR}${FILE} ${BASE_DIR}${BLOB} ${server} $1 ${DATE}
@@ -119,7 +119,7 @@ then
 		else 
 			if [ $# -eq 2 ]
 			then
-				echo "Processing a single site ($2), enter any key to continue (ctrl-c to cancel)"
+				echo "Processing a single site ($2), enter any key to continue (ctrl-c to cancel)" | tee -a ${STATUSFILE}
 				read
 				if [ $2 == ${SITES[0]} ]
 				then
@@ -128,7 +128,7 @@ then
 					process ${TMP_DIR} ${BASE_DIR}${DATA}/$2${FILE} ${BASE_DIR}${DATA}/$2${BLOB} $2 $1 ${DATE}
 				fi
 			else
-				echo "Error with your selection, only two arguements allowed"
+				echo "Error with your selection, only two arguements allowed" | tee -a ${STATUSFILE}
 			fi
 		fi
 	fi
