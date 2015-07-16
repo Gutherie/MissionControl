@@ -34,12 +34,12 @@ function process {
 	BFILEMD5="${6}_blobstorage-$4.md5"
 
 	echo "Archiving data file for $4" | tee -a ${STATUSFILE}
-        ssh $5 "tar -pcvzf ${1}/${DFILE} $2/Data.fs"
+        ssh $5 "tar -pcvzf ${1}/${DFILE} -C $2 ./Data.fs"
 	sleep ${DELAY}
 	ssh $5 "md5sum ${1}/${DFILE} $2/Data.fs" > ${6}_Data.fs-$4.md5
 	sleep ${DELAY} 
         echo "Archiving blobstorage for $2" | tee -a ${STATUSFILE}
-        ssh $5 "tar -pcvzf $TMP_DIR/${BFILE} $3"
+        ssh $5 "tar -pcvzf $TMP_DIR/${BFILE} -C $3 ."
 	sleep ${DELAY}
 	ssh $5 "md5sum $TMP_DIR/${BFILE}" > ${6}_blobstorage-$4.md5
 	sleep ${DELAY}
@@ -122,7 +122,7 @@ then
 			fi
 		fi
 	fi
-	echo ${STATUS} | /usr/bin/mailx -s "zope1 backup" $EMAIL
+	cat ${STATUSFILE} | /usr/bin/mailx -s "zope1 backup" $EMAIL
 else
 	echo "You must enter on argument: ? for help"
 fi
