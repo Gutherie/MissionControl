@@ -5,7 +5,9 @@
 ###  system and delete                               ##
 #####################################################
 
+## these variables must be edited to reflect the target systems
 EMAIL="youremail@here.com"
+EMAILSUB="some kinda backup!"
 BASE_DIR=/srv/plone-service/plone4-prod/var
 TMP_DIR=/tmp/BACKUP
 DATA=/data
@@ -14,9 +16,9 @@ BLOB=/blobstorage
 STATUS="Backup was not completed for "
 SITES=(main bayswatermd hchlink mat_centre oscarResource tapestry chap iampreg mfp oscarResource-plone trihpp dfmh iam_x my_blood_pressure oscartools ebm-chews inch oscarcanada qcanz fht it oscarmanual quality fmah macfm oscar-resource sfhc)
 DELAY=30
-
+LOCALDIR=/your/dir/for/backupfiles
 DATE=`date +%Y-%m-%d`
-STATUSFILE="status.tmp"
+STATUSFILE=${LOCALDIR}/"status.tmp"
 
 cat /dev/null > ${STATUSFILE}
 
@@ -33,6 +35,7 @@ function process {
 	BFILE="${6}_blobstorage-$4.tar.gz"
 	BFILEMD5="${6}_blobstorage-$4.md5"
 
+
 	echo "Archiving data file for $4" | tee -a ${STATUSFILE}
         ssh $5 "tar -pcvzf ${1}/${DFILE} -C $2 ./Data.fs"
 	sleep ${DELAY}
@@ -44,9 +47,9 @@ function process {
 	ssh $5 "md5sum $TMP_DIR/${BFILE}" > ${6}_blobstorage-$4.md5
 	sleep ${DELAY}
         echo "send data to backup server"  | tee -a ${STATUSFILE}
-        scp $5:$1/${DFILE} ./
+        scp $5:$1/${DFILE} ${LOCALDIR}
 	sleep ${DELAY}
-	scp $5:$1/${DFILEMD5} ./
+	scp $5:$1/${DFILEMD5} ${LOCALDIR}
 	sleep ${DELAY}
 
 	# get hash values local and remote data files then compare
@@ -62,13 +65,13 @@ function process {
         ssh $5 "rm $TMP_DIR/${DFILE}"
 	sleep ${DELAY}
         echo "send blobs to backup" | tee ${STATUSFILE}
-        scp $5:$1/${BFILE} ./
+        scp $5:$1/${BFILE} ${LOCALDIR}
 	sleep ${DELAY}
-	scp $5:$1/${BFILEMD5} ./
+	scp $5:$1/${BFILEMD5} ${LOCALDIR}
 
 	# get the hash values for local and remote then compare
 	md5L=$(md5sum ${BFILE} | cut -f 1 -d ' ')
-	md5R=$(cat ${BFILEMD5} |cut -f 1 -d ' ')
+	md5R=$(cat ${BFILEMD5} | cut -f 1 -d ' ')
 	 
 	if [ $md5L == $md5R ]
 	then
@@ -129,7 +132,7 @@ then
 			fi
 		fi
 	fi
-	cat ${STATUSFILE} | /usr/bin/mailx -s "zope1 backup" $EMAIL
+	cat ${STATUSFILE} | /usr/bin/mailx -s ${EMAILSUB} $EMAIL
 else
 	echo "You must enter on argument: ? for help"
 fi
