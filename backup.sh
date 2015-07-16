@@ -54,7 +54,7 @@ function process {
 
 	# get hash values local and remote data files then compare
 	md5L=$(md5sum ${DFILE}| cut -f 1 -d ' ')
-	md5R=$(cat ${DFILEMD5} | cut -f 1 -d ' ')
+	md5R=$(head -n 1 ${DFILEMD5} | cut -f 1 -d ' ')
 	if [ $md5L == $md5R ]
 	then
 		echo "Hash match for ${DFILE}" | tee -a ${STATUSFILE}
@@ -71,7 +71,7 @@ function process {
 
 	# get the hash values for local and remote then compare
 	md5L=$(md5sum ${BFILE} | cut -f 1 -d ' ')
-	md5R=$(cat ${BFILEMD5} | cut -f 1 -d ' ')
+	md5R=$(head -n 1 ${BFILEMD5} | cut -f 1 -d ' ')
 	 
 	if [ $md5L == $md5R ]
 	then
