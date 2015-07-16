@@ -48,8 +48,11 @@ function process {
 	sleep ${DELAY}
 	scp $5:$1/${DFILEMD5} ./
 	sleep ${DELAY}
-	md5sum --quiet ${DFILEMD5}
-	if [ $? -eq 0 ]
+
+	# get hash values local and remote data files then compare
+	md5L=$(md5sum ${DFILE}| cut -f 1 -d ' ')
+	md5R=$(cat ${DFILEMD5} | cut -f 1 -d ' ')
+	if [ $md5L == $md5R ]
 	then
 		echo "Hash match for ${DFILE}" | tee -a ${STATUSFILE}
 	else
@@ -62,12 +65,16 @@ function process {
         scp $5:$1/${BFILE} ./
 	sleep ${DELAY}
 	scp $5:$1/${BFILEMD5} ./
-	md5sum --quiet ${BFILEMD5}
-	if [ $? -eq 0 ]
+
+	# get the hash values for local and remote then compare
+	md5L=$(md5sum ${BFILE} | cut -f 1 -d ' ')
+	md5R=$(cat ${BFILEMD5} |cut -f 1 -d ' ')
+	 
+	if [ $md5L == $md5R ]
 	then
                echo "Hash match for ${BFILE}" | tee -a ${STATUSFILE}
         else
-                echo "Hash FAILED for ${BFILE}" | tee -a ${STATUSFILE}
+               echo "Hash FAILED for ${BFILE}" | tee -a ${STATUSFILE}
         fi
 		
 	sleep ${DELAY}
